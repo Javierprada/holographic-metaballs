@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;  /* Para que no aparaescan barras de scroll*/
+  background-color: #111; /*Un gris muy oscuro*/
+
+}
+
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;  
+}
