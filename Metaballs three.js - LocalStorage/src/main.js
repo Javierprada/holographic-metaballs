@@ -2,9 +2,19 @@ import './style.css';
 import * as THREE from 'three';
 import GestorVentanas from './windowManager';
 import { MarchingCubes } from 'three/examples/jsm/objects/MarchingCubes.js';
+import { objectDirection } from 'three/src/nodes/accessors/Object3DNode.js';
 
 const gestor = new GestorVentanas();
 const lienzo = document.querySelector('#canvas');
+
+const listaColores = [
+    new THREE.Color(0x00ff00), // Verde
+    new THREE.Color(0xff0000), // Rojo
+    new THREE.Color(0x0000ff), // Azul
+    new THREE.Color(0xffff00), // Amarillo
+    new THREE.Color(0xff00ff)  // Rosa
+];
+
 
 const escena = new THREE.Scene();
 // CAMBIO 1: Fondo gris para saber si el canvas está vivo
@@ -17,7 +27,7 @@ const renderizador = new THREE.WebGLRenderer({ canvas: lienzo, antialias: true }
 renderizador.setSize(window.innerWidth, window.innerHeight);
 
 const materialLiquido = new THREE.MeshPhongMaterial({ 
-    color: 0x00ff00, 
+    vertexColors: true, 
     emissive: 0x112211, // Que brille un poco por sí solo
     specular: 0xffffff, 
     shininess: 100 
@@ -43,6 +53,7 @@ let bolaVel = {x: 0, y: 0};  // Velocidad para el rebote
 
 
 
+
 function actualizarLiquido() {
     // CAMBIO 2: Si los datos no están listos, no hagas nada (evita el error fatal)
     if (!gestor.ventanas || !gestor.id || !gestor.ventanas[gestor.id]) return;
@@ -56,8 +67,16 @@ function actualizarLiquido() {
     const otras = gestor.obtenerOtrasVentanas();
     const todas = [misDatos, ...otras];
 
+    const idsventanas = Object.keys(gestor.ventanas);
+
+
     todas.forEach((v) => {
         if (!v || !v.centro) return;
+
+        // 1. Buscamos qué color le toca a esta ventana (v)
+        // Usamos el índice del ID para elegir un color de la lista
+        const indiceColor = idsventanas.indexOf(v.id) % listaColores.length;
+        const colorBola = listaColores[indiceColor];
 
         
         if (v.id === gestor.id) {
@@ -82,7 +101,7 @@ function actualizarLiquido() {
             if (bolaPos.x > 0.55 || bolaPos.x < 0.10) bolaVel.x *= 0.4;
             if (bolaPos.y > 0.55 || bolaPos.y < 0.10) bolaVel.y *= 0.4;
 
-            efecto.addBall(bolaPos.x, bolaPos.y, 0.5, 0.8, 16);
+            efecto.addBall(bolaPos.x, bolaPos.y, 0.5, 1.2, 9, colorBola);
 
 
         }
@@ -92,12 +111,12 @@ function actualizarLiquido() {
             const dx = v.centro.x - misDatos.centro.x;
             const dy = v.centro.y - misDatos.centro.y;
             const px = (dx / 1000) + 0.5;
-            const py = (dy / 1000) + 0.5;
+            const py = (-dy / 1000) + 0.5;
 
             efecto.addBall(
                 Math.max(0.05, Math.min(0.95, px)),
                 Math.max(0.05, Math.min(0.95, py)), 
-                0.5, 0.3, 12
+                0.5, 0.3, 12, colorBola
             );
         }
 
